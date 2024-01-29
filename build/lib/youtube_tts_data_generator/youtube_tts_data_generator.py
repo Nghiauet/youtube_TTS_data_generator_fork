@@ -250,8 +250,8 @@ class YTSpeechDataGenerator(object):
                 }
             ],
             "logger": YTLogger(),
-            "writeautomaticsub": False,
-            "listsubtitles": False,
+            "writeautomaticsub" :True,
+            "listsubtitles": True,
         }
 
     def get_available_langs(self):
@@ -296,17 +296,17 @@ class YTSpeechDataGenerator(object):
         """
         self.text_path = os.path.join(self.root, links_txt)
         if os.path.exists(self.text_path) and os.path.isfile(self.text_path):
+
             links = open(os.path.join(self.text_path)).read().strip().split("\n")
-            # print("text_path", self.text_path)
+
             if os.path.getsize(self.text_path) > 0:
                 for ix in range(len(links)):
                     link = links[ix]
-                    # print("link", link)
                     video_id = self.get_video_id(link)
-                    # print("video_id", video_id)
+
                     if video_id != []:
-                        filename = f"{self.name}{ix+1}.wav"
-                        wav_file = filename
+                        filename = f"{self.name}{ix+1}.mp4"
+                        wav_file = filename.replace(".mp4", ".wav")
                         self.ydl_opts["outtmpl"] = os.path.join(
                             self.download_dir, filename
                         )
@@ -340,15 +340,6 @@ class YTSpeechDataGenerator(object):
                                     + " from "
                                     + link
                                 )
-                                # search file in download_dir and rename .wav.wav to .wav
-                                for file in os.listdir(self.download_dir):
-                                    if file.endswith(".wav.wav"):
-                                        os.rename(
-                                            os.path.join(self.download_dir, file),
-                                            os.path.join(
-                                                self.download_dir, file[:-4]
-                                            ),
-                                        )
                                 self.wav_counter += 1
                                 self.wav_filenames.append(wav_file)
                             except (TranscriptsDisabled, NoTranscriptFound):
@@ -361,6 +352,7 @@ class YTSpeechDataGenerator(object):
                     else:
                         warnings.warn(
                             f"WARNING - video {link} does not seem to be a valid YouTube url. Skipping..",
+                            InvalidURLWarning,
                         )
                 if self.wav_filenames != []:
                     with open(self.filenames_txt, "w") as f:
@@ -499,6 +491,7 @@ class YTSpeechDataGenerator(object):
                             self.convert_time(start), "%H:%M:%S"
                         ).time()
                         if trim_min_end > 0:
+
                             t2 = datetime.strptime(
                                 self.convert_time(end), "%H:%M:%S"
                             ).time()
